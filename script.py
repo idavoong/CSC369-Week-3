@@ -42,29 +42,27 @@ if __name__ == "__main__":
         .filter(pl.col("user_id").is_in(has_session.select(pl.col("user_id")).collect()))
         .select(pl.col("user_id"), pl.col("timestamp"))
         .sort(["user_id", "timestamp"])
-        .group_by("user_id")
+        .group_by("user_id") # get a list of timestamps for each user
         .agg([
             pl.col("timestamp"),
             (pl.col("timestamp")
             .diff()
-            .fill_null(pl.duration(minutes=0))  # Handle the first timestamp
+            .fill_null(pl.duration(minutes=0)) 
             .alias("time_diff"))
         ])
-        .explode(["timestamp", "time_diff"])  # Flatten the columns for processing
+        .explode(["timestamp", "time_diff"])  
         .with_columns(
-        # Set time_diff to 0 if it is 15 minutes or greater
-        pl.when(pl.col("time_diff") >= pl.duration(minutes=15))
+            pl.when(pl.col("time_diff") >= pl.duration(minutes=15))
             .then(pl.duration(microseconds=0))
             .otherwise(pl.col("time_diff"))
             .alias("time_diff"),
-            # Assign a new session ID if time_diff exceeds 15 minutes
             (pl.col("time_diff") > pl.duration(minutes=15)).cum_sum().alias("session_id")
         )
         .group_by(["user_id", "session_id"])
         .agg([
-            (pl.col("timestamp").max() - pl.col("timestamp").min()).alias("session_length")
+            (pl.col("timestamp").max() - pl.col("timestamp").min()).dt.total_seconds().alias("session_length (s)")
         ])
-        .select(pl.col("session_length")).mean()
+        .select(pl.col("session_length (s)")).mean()
     )
 
     pixels_placed_50 = (

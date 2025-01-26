@@ -12,7 +12,7 @@
   3. White: 580261 users
 
 ### Average Session Length
-- **Output:** 14m 12s 419951µs
+- **Output:** 852.160536 seconds
 
 ### Percentiles of Pixels Placed
 - **Output:**
