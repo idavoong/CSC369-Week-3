@@ -7,9 +7,9 @@
 
 ### Ranking of Colors by Distinct Users
 - **Top **
-  1. Black: 1068290 users
-  2. Orange-Red: 656540 users
-  3. White: 580261 users
+  1. Black: 412124 users
+  2. Orange-Red: 299003 users
+  3. White: 270212 users
 
 ### Average Session Length
 - **Output:** 852.160536 seconds
@@ -25,4 +25,4 @@
 - **Output:** 1062699 users
 
 ### Runtime
-4853.4928 ms
+8176.2189 ms

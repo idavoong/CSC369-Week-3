@@ -19,10 +19,11 @@ if __name__ == "__main__":
     ranks = (
         pl.scan_parquet("2022pyarrow.parquet")
         .filter((pl.col("timestamp") >= start) & (pl.col("timestamp") <= end))
+        .group_by("user_id", "pixel_color")
+        .agg(pl.count().alias("count"))
         .group_by("pixel_color")
-        .agg(pl.col("pixel_color").first().alias("color"), pl.len().alias("count"))
-        .sort("count", descending=True)
-        .select(pl.col("color"), pl.col("count"))
+        .agg(pl.col("count").count().alias("unique_count"))
+        .sort("unique_count", descending=True)
         .head(3)
     )
 
@@ -71,7 +72,6 @@ if __name__ == "__main__":
         .select(pl.col("user_id"))
         .group_by("user_id")
         .count()
-        .sort("count")
         .quantile(0.5)
     )
 
@@ -81,7 +81,6 @@ if __name__ == "__main__":
         .select(pl.col("user_id"))
         .group_by("user_id")
         .count()
-        .sort("count")
         .quantile(0.75)
     )
 
@@ -91,7 +90,6 @@ if __name__ == "__main__":
         .select(pl.col("user_id"))
         .group_by("user_id")
         .count()
-        .sort("count")
         .quantile(0.90)
     )
 
@@ -101,7 +99,6 @@ if __name__ == "__main__":
         .select(pl.col("user_id"))
         .group_by("user_id")
         .count()
-        .sort("count")
         .quantile(0.99)
     )
 
@@ -115,10 +112,6 @@ if __name__ == "__main__":
         .count()
     )
 
-    end_time = time.perf_counter_ns()
-
-    elapsed_time_ms = (end_time - start_time) / 1000000
-
     print("Top 3 colors: ", ranks.collect())
     print("Average session: ", session_lengths.collect())
     print("50th percentile: ", pixels_placed_50.collect())
@@ -126,4 +119,7 @@ if __name__ == "__main__":
     print("90th percentile: ", pixels_placed_90.collect())
     print("99th percentile: ", pixels_placed_99.collect())
     print("First time users: ", first_time.collect())
+
+    end_time = time.perf_counter_ns()
+    elapsed_time_ms = (end_time - start_time) / 1000000
     print("Time taken: ", elapsed_time_ms, "ms")
